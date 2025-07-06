@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>لوحة التحكم - إدارة المنشورات</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #4CAF50;
+      --danger-color: #f44336;
+      --warning-color: #ff9800;
+      --info-color: #2196F3;
+      --light-bg: #f8f9fa;
+      --dark-text: #333;
+      --border-color: #ddd;
+    }
+    
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+      color: var(--dark-text);
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    input[type="text"],
+    input[type="password"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-family: 'Tajawal', sans-serif;
+      font-size: 16px;
+      transition: border 0.3s;
+    }
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    }
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+    }
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    .btn-warning {
+      background-color: var(--warning-color);
+      color: white;
+    }
+    .btn-info {
+      background-color: var(--info-color);
+      color: white;
+    }
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--dark-text);
+    }
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    .btn:active {
+      transform: translateY(0);
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+    .message {
+      margin: 15px 0;
+      padding: 12px 15px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    .success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border-left: 4px solid #2e7d32;
+    }
+    .error {
+      background-color: #ffebee;
+      color: #c62828;
+      border-left: 4px solid #c62828;
+    }
+    .warning {
+      background-color: #fff8e1;
+      color: #f57f17;
+      border-left: 4px solid #f57f17;
+    }
+    .post-item {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: var(--light-bg);
+      border-radius: 8px;
+      position: relative;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s;
+    }
+    .post-item:hover {
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    .post-item h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    .post-item p {
+      margin-bottom: 10px;
+      color: #555;
+      line-height: 1.6;
+    }
+    .post-item small {
+      color: #777;
+      font-size: 14px;
+    }
+    .post-actions {
+      position: absolute;
+      left: 15px;
+      top: 15px;
+      display: flex;
+      gap: 8px;
+    }
+    .post-type {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .type-hadith {
+      background-color: #e3f2fd;
+      color: #1565c0;
+    }
+    .type-fatwa {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    .type-post {
+      background-color: #f3e5f5;
+      color: #7b1fa2;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+    .tab.active {
+      border-bottom-color: var(--primary-color);
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .flex-row {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    .flex-row > * {
+      flex: 1;
+    }
+    .search-box {
+      margin-bottom: 20px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #777;
+    }
+    .empty-state i {
+      font-size: 50px;
+      margin-bottom: 15px;
+      color: #ddd;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 25px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      margin: 0;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #777;
+    }
+    .modal-footer {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+      .flex-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>لوحة إدارة المنشورات</h1>
+    
+    <div class="tabs">
+      <div class="tab active" data-tab="settings">الإعدادات</div>
+      <div class="tab" data-tab="add-post">إضافة منشور</div>
+      <div class="tab" data-tab="posts-list">قائمة المنشورات</div>
+    </div>
+    
+    <div class="tab-content active" id="settings">
+      <div class="form-group">
+        <label for="token">GitHub Token:</label>
+        <input type="password" id="token" required>
+        <small class="text-muted">يستخدم للوصول إلى مستودع GitHub الخاص بك</small>
+      </div>
+      
+      <div class="flex-row">
+        <div class="form-group">
+          <label for="username">اسم المستخدم:</label>
+          <input type="text" id="username" value="aboelfooz" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="repo">اسم المستودع:</label>
+          <input type="text" id="repo" value="islamic-site" required>
+        </div>
+      </div>
+      
+      <button id="saveSettingsBtn" class="btn btn-primary">حفظ الإعدادات</button>
+      <div id="settingsMessage" class="message"></div>
+    </div>
+    
+    <div class="tab-content" id="add-post">
+      <div class="form-group">
+        <label for="postType">نوع المنشور:</label>
+        <select id="postType">
+          <option value="حديث">حديث</option>
+          <option value="فتوى">فتوى</option>
+          <option value="منشور">منشور عام</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="postTitle">العنوان:</label>
+        <input type="text" id="postTitle" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="postContent">المحتوى:</label>
+        <textarea id="postContent" required></textarea>
+      </div>
+      
+      <div class="flex-row">
+        <button id="addPostBtn" class="btn btn-primary">إضافة المنشور</button>
+        <button id="clearFormBtn" class="btn btn-outline">مسح النموذج</button>
+      </div>
+      <div id="addPostMessage" class="message"></div>
+    </div>
+    
+    <div class="tab-content" id="posts-list">
+      <div class="flex-row">
+        <div class="form-group search-box">
+          <input type="text" id="searchInput" placeholder="ابحث في المنشورات...">
+        </div>
+        <button id="refreshBtn" class="btn btn-info">تحديث القائمة</button>
+      </div>
+      
+      <div id="postsList"></div>
+    </div>
+  </div>
+
+  <!-- Modal for Edit Post -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">تعديل المنشور</h3>
+        <button class="close-btn" id="closeEditModal">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="editPostType">نوع المنشور:</label>
+        <select id="editPostType">
+          <option value="حديث">حديث</option>
+          <option value="فتوى">فتوى</option>
+          <option value="منشور">منشور عام</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="editPostTitle">العنوان:</label>
+        <input type="text" id="editPostTitle" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="editPostContent">المحتوى:</label>
+        <textarea id="editPostContent" required></textarea>
+      </div>
+      
+      <div class="modal-footer">
+        <button id="cancelEditBtn" class="btn btn-outline">إلغاء</button>
+        <button id="saveEditBtn" class="btn btn-primary">حفظ التعديلات</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Elements
+      const tokenInput = document.getElementById('token');
+      const repoInput = document.getElementById('repo');
+      const usernameInput = document.getElementById('username');
+      const postTypeSelect = document.getElementById('postType');
+      const postTitleInput = document.getElementById('postTitle');
+      const postContentTextarea = document.getElementById('postContent');
+      const addPostBtn = document.getElementById('addPostBtn');
+      const clearFormBtn = document.getElementById('clearFormBtn');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+      const searchInput = document.getElementById('searchInput');
+      const settingsMessageDiv = document.getElementById('settingsMessage');
+      const addPostMessageDiv = document.getElementById('addPostMessage');
+      const postsListDiv = document.getElementById('postsList');
+      
+      // Modal elements
+      const editModal = document.getElementById('editModal');
+      const closeEditModalBtn = document.getElementById('closeEditModal');
+      const cancelEditBtn = document.getElementById('cancelEditBtn');
+      const editPostTypeSelect = document.getElementById('editPostType');
+      const editPostTitleInput = document.getElementById('editPostTitle');
+      const editPostContentTextarea = document.getElementById('editPostContent');
+      const saveEditBtn = document.getElementById('saveEditBtn');
+      
+      // Tab functionality
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabId = tab.getAttribute('data-tab');
+          
+          // Update active tab
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          
+          // Update active content
+          tabContents.forEach(content => content.classList.remove('active'));
+          document.getElementById(tabId).classList.add('active');
+          
+          // Load posts if going to posts list
+          if (tabId === 'posts-list') {
+            loadPosts();
+          }
+        });
+      });
+      
+      // State
+      let currentPosts = [];
+      let fileSha = null;
+      let currentEditIndex = null;
+      
+      // Load saved settings from localStorage
+      function loadSettings() {
+        const savedToken = localStorage.getItem('githubToken');
+        const savedUsername = localStorage.getItem('githubUsername');
+        const savedRepo = localStorage.getItem('githubRepo');
+        
+        if (savedToken) tokenInput.value = savedToken;
+        if (savedUsername) usernameInput.value = savedUsername;
+        if (savedRepo) repoInput.value = savedRepo;
+      }
+      
+      // Save settings to localStorage
+      function saveSettings() {
+        const token = tokenInput.value.trim();
+        const username = usernameInput.value.trim();
+        const repo = repoInput.value.trim();
+        
+        localStorage.setItem('githubToken', token);
+        localStorage.setItem('githubUsername', username);
+        localStorage.setItem('githubRepo', repo);
+        
+        showMessage(settingsMessageDiv, 'تم حفظ الإعدادات بنجاح', 'success');
+      }
+      
+      // دالة لتحميل المنشورات الحالية
+      async function loadPosts() {
+        const token = tokenInput.value.trim();
+        const repo = repoInput.value.trim();
+        const username = usernameInput.value.trim();
+        
+        if (!token || !repo || !username) {
+          showMessage(addPostMessageDiv, 'الرجاء ملء جميع الحقول في قسم الإعدادات', 'error');
+          return;
+        }
+        
+        try {
+          const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/posts.json`;
+          
+          const response = await fetch(apiUrl, {
+            headers: {
+              'Authorization': `token ${token}`,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
+          
+          if (response.status === 404) {
+            // الملف غير موجود، سننشئه لاحقاً
+            currentPosts = [];
+            fileSha = null;
+            renderPostsList();
+            showMessage(addPostMessageDiv, 'لم يتم العثور على ملف المنشورات. سيتم إنشاء ملف جديد عند إضافة أول منشور.', 'warning');
+            return;
+          }
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `خطأ في جلب البيانات: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          fileSha = data.sha;
+          
+          // تحويل المحتوى بشكل صحيح مع دعم العربية
+          const decodedContent = decodeURIComponent(escape(atob(data.content)));
+          currentPosts = JSON.parse(decodedContent);
+          
+          renderPostsList();
+          showMessage(addPostMessageDiv, 'تم تحميل المنشورات بنجاح', 'success');
+          
+        } catch (error) {
+          showMessage(addPostMessageDiv, `حدث خطأ: ${error.message}`, 'error');
+          console.error(error);
+        }
+      }
+      
+      // دالة لعرض المنشورات مع البحث
+      function renderPostsList(searchTerm = '') {
+        postsListDiv.innerHTML = '';
+        
+        let filteredPosts = currentPosts;
+        if (searchTerm) {
+          const term = searchTerm.toLowerCase();
+          filteredPosts = currentPosts.filter(post => 
+            (post.العنوان && post.العنوان.toLowerCase().includes(term)) ||
+            (post.المحتوى && post.المحتوى.toLowerCase().includes(term)) ||
+            (post.النوع && post.النوع.toLowerCase().includes(term))
+          );
+        }
+        
+        if (filteredPosts.length === 0) {
+          const emptyState = document.createElement('div');
+          emptyState.className = 'empty-state';
+          emptyState.innerHTML = `
+            <div>📭</div>
+            <h3>لا توجد منشورات متاحة</h3>
+            <p>${searchTerm ? 'لم يتم العثور على منشورات تطابق بحثك' : 'لم يتم إضافة أي منشورات بعد'}</p>
+          `;
+          postsListDiv.appendChild(emptyState);
+          return;
+        }
+        
+        filteredPosts.forEach((post, index) => {
+          const postItem = document.createElement('div');
+          postItem.className = 'post-item';
+          
+          // تحديد كلاس نوع المنشور
+          let typeClass = 'type-post';
+          if (post.النوع === 'حديث') typeClass = 'type-hadith';
+          else if (post.النوع === 'فتوى') typeClass = 'type-fatwa';
+          
+          postItem.innerHTML = `
+            <div class="post-actions">
+              <button class="btn btn-warning btn-sm edit-btn" data-index="${index}">تعديل</button>
+              <button class="btn btn-danger btn-sm delete-btn" data-index="${index}">حذف</button>
+            </div>
+            <h3>
+              ${post.العنوان || 'بدون عنوان'}
+              <span class="post-type ${typeClass}">${post.النوع || 'غير محدد'}</span>
+            </h3>
+            <p>${formatPostContent(post.المحتوى || '')}</p>
+            <small>${post.التاريخ || 'غير معروف'}</small>
+          `;
+          
+          postsListDiv.appendChild(postItem);
+        });
+        
+        // إضافة معالجات أحداث لأزرار الحذف والتعديل
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            deletePost(index);
+          });
+        });
+        
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            openEditModal(index);
+          });
+        });
+      }
+      
+      // تنسيق محتوى المنشور لعرضه بشكل أفضل
+      function formatPostContent(content) {
+        if (!content) return '';
+        
+        // تقصير المحتوى الطويل مع إضافة "..."
+        const shortened = content.length > 200 ? content.substring(0, 200) + '...' : content;
+        
+        // استبدال الأسطر الجديدة بفواصل HTML
+        return shortened.replace(/\n/g, '<br>');
+      }
+      
+      // فتح نموذج التعديل
+      function openEditModal(index) {
+        if (index < 0 || index >= currentPosts.length) return;
+        
+        const post = currentPosts[index];
+        currentEditIndex = index;
+        
+        editPostTypeSelect.value = post.النوع || 'منشور';
+        editPostTitleInput.value = post.العنوان || '';
+        editPostContentTextarea.value = post.المحتوى || '';
+        
+        editModal.style.display = 'flex';
+      }
+      
+      // إغلاق نموذج التعديل
+      function closeEditModal() {
+        editModal.style.display = 'none';
+        currentEditIndex = null;
+      }
+      
+      // حفظ التعديلات
+      async function saveEditedPost() {
+        if (currentEditIndex === null) return;
+        
+        const type = editPostTypeSelect.value;
+        const title = editPostTitleInput.value.trim();
+        const content = editPostContentTextarea.value.trim();
+        
+        if (!title || !content) {
+          alert('الرجاء إدخال العنوان والمحتوى');
+          return;
+        }
+        
+        currentPosts[currentEditIndex] = {
+          ...currentPosts[currentEditIndex],
+          النوع: type,
+          العنوان: title,
+          المحتوى: content
+        };
+        
+        await savePosts();
+        closeEditModal();
+      }
+      
+      // دالة لحذف منشور
+      async function deletePost(index) {
+        if (index < 0 || index >= currentPosts.length) return;
+        
+        if (confirm('هل أنت متأكد من حذف هذا المنشور؟ لا يمكن التراجع عن هذا الإجراء.')) {
+          currentPosts.splice(index, 1);
+          await savePosts();
+        }
+      }
+      
+      // دالة لحفظ المنشورات
+      async function savePosts() {
+        const token = tokenInput.value.trim();
+        const repo = repoInput.value.trim();
+        const username = usernameInput.value.trim();
+        
+        if (!token || !repo || !username) {
+          showMessage(addPostMessageDiv, 'الرجاء ملء جميع الحقول في قسم الإعدادات', 'error');
+          return;
+        }
+        
+        try {
+          const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/posts.json`;
+          
+          // تحويل البيانات إلى JSON مع دعم العربية
+          const postsJSON = JSON.stringify(currentPosts, null, 2);
+          
+          // طريقة موثوقة لتحويل إلى Base64 مع دعم Unicode
+          const utf8Bytes = new TextEncoder().encode(postsJSON);
+          let binaryString = '';
+          for (let i = 0; i < utf8Bytes.length; i++) {
+            binaryString += String.fromCharCode(utf8Bytes[i]);
+          }
+          const content = btoa(binaryString);
+          
+          // إعداد بيانات الطلب
+          const requestData = {
+            message: "تحديث المنشورات",
+            content: content,
+            sha: fileSha || undefined // لا نرسل sha إذا كان null
+          };
+          
+          // إزالة الحقل sha إذا كان null
+          if (!fileSha) {
+            delete requestData.sha;
+          }
+          
+          const response = await fetch(apiUrl, {
+            method: "PUT",
+            headers: {
+              "Authorization": `token ${token}`,
+              "Content-Type": "application/json; charset=utf-8",
+              "Accept": "application/vnd.github.v3+json"
+            },
+            body: JSON.stringify(requestData)
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `خطأ في الحفظ: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          fileSha = data.content.sha;
+          
+          showMessage(addPostMessageDiv, 'تم حفظ المنشورات بنجاح', 'success');
+          renderPostsList(searchInput.value.trim());
+          
+        } catch (error) {
+          showMessage(addPostMessageDiv, `حدث خطأ أثناء الحفظ: ${error.message}`, 'error');
+          console.error(error);
+        }
+      }
+      
+      // دالة لعرض الرسائل
+      function showMessage(element, message, type) {
+        element.textContent = message;
+        element.className = 'message ' + type;
+        setTimeout(() => {
+          element.textContent = '';
+          element.className = 'message';
+        }, 5000);
+      }
+      
+      // معالج حدث لإضافة منشور جديد
+      addPostBtn.addEventListener('click', async function() {
+        const type = postTypeSelect.value;
+        const title = postTitleInput.value.trim();
+        const content = postContentTextarea.value.trim();
+        
+        if (!title || !content) {
+          showMessage(addPostMessageDiv, 'الرجاء إدخال العنوان والمحتوى', 'error');
+          return;
+        }
+        
+        const newPost = {
+          النوع: type,
+          العنوان: title,
+          المحتوى: content,
+          التاريخ: new Date().toISOString().split('T')[0]
+        };
+        
+        currentPosts.unshift(newPost);
+        await savePosts();
+        
+        // مسح حقول الإدخال
+        postTitleInput.value = '';
+        postContentTextarea.value = '';
+      });
+      
+      // مسح النموذج
+      clearFormBtn.addEventListener('click', function() {
+        postTitleInput.value = '';
+        postContentTextarea.value = '';
+      });
+      
+      // معالج حدث لتحديث القائمة
+      refreshBtn.addEventListener('click', loadPosts);
+      
+      // البحث في المنشورات
+      searchInput.addEventListener('input', function() {
+        renderPostsList(this.value.trim());
+      });
+      
+      // حفظ الإعدادات
+      saveSettingsBtn.addEventListener('click', saveSettings);
+      
+      // معالجات أحداث النموذج التعديل
+      closeEditModalBtn.addEventListener('click', closeEditModal);
+      cancelEditBtn.addEventListener('click', closeEditModal);
+      saveEditBtn.addEventListener('click', saveEditedPost);
+      
+      // إغلاق النموذج عند النقر خارج المحتوى
+      editModal.addEventListener('click', function(e) {
+        if (e.target === editModal) {
+          closeEditModal();
+        }
+      });
+      
+      // تحميل الإعدادات عند البدء
+      loadSettings();
+      
+      // تحميل المنشورات إذا كان التوكن موجوداً
+      if (tokenInput.value) {
+        loadPosts();
+      }
+    });
+  </script>
+</body>
+</html>
