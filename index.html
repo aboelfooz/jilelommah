@@ -44,7 +44,8 @@
     input[type="text"],
     input[type="password"],
     select,
-    textarea {
+    textarea,
+    input[type="file"] {
       width: 100%;
       padding: 12px;
       border: 1px solid var(--border-color);
@@ -56,7 +57,8 @@
     input[type="text"]:focus,
     input[type="password"]:focus,
     select:focus,
-    textarea:focus {
+    textarea:focus,
+    input[type="file"]:focus {
       border-color: var(--primary-color);
       outline: none;
       box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
@@ -270,6 +272,19 @@
       justify-content: flex-end;
       gap: 10px;
     }
+    .preview-image {
+      max-width: 100%;
+      max-height: 200px;
+      margin-top: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .post-image {
+      max-width: 100%;
+      max-height: 300px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
     @media (max-width: 768px) {
       .container {
         padding: 15px;
@@ -333,6 +348,12 @@
         <textarea id="postContent" required></textarea>
       </div>
       
+      <div class="form-group">
+        <label for="postImage">صورة المنشور (اختياري):</label>
+        <input type="file" id="postImage" accept="image/*">
+        <img id="imagePreview" class="preview-image" alt="معاينة الصورة">
+      </div>
+      
       <div class="flex-row">
         <button id="addPostBtn" class="btn btn-primary">إضافة المنشور</button>
         <button id="clearFormBtn" class="btn btn-outline">مسح النموذج</button>
@@ -378,6 +399,12 @@
         <textarea id="editPostContent" required></textarea>
       </div>
       
+      <div class="form-group">
+        <label for="editPostImage">تغيير الصورة (اختياري):</label>
+        <input type="file" id="editPostImage" accept="image/*">
+        <img id="editImagePreview" class="preview-image" alt="معاينة الصورة">
+      </div>
+      
       <div class="modal-footer">
         <button id="cancelEditBtn" class="btn btn-outline">إلغاء</button>
         <button id="saveEditBtn" class="btn btn-primary">حفظ التعديلات</button>
@@ -394,6 +421,8 @@
       const postTypeSelect = document.getElementById('postType');
       const postTitleInput = document.getElementById('postTitle');
       const postContentTextarea = document.getElementById('postContent');
+      const postImageInput = document.getElementById('postImage');
+      const imagePreview = document.getElementById('imagePreview');
       const addPostBtn = document.getElementById('addPostBtn');
       const clearFormBtn = document.getElementById('clearFormBtn');
       const refreshBtn = document.getElementById('refreshBtn');
@@ -410,6 +439,8 @@
       const editPostTypeSelect = document.getElementById('editPostType');
       const editPostTitleInput = document.getElementById('editPostTitle');
       const editPostContentTextarea = document.getElementById('editPostContent');
+      const editPostImageInput = document.getElementById('editPostImage');
+      const editImagePreview = document.getElementById('editImagePreview');
       const saveEditBtn = document.getElementById('saveEditBtn');
       
       // Tab functionality
@@ -550,6 +581,10 @@
           if (post.النوع === 'حديث') typeClass = 'type-hadith';
           else if (post.النوع === 'فتوى') typeClass = 'type-fatwa';
           
+          // تحضير عرض الصورة إذا وجدت
+          const imageHtml = post.الصورة ? 
+            `<img src="${post.الصورة}" class="post-image" alt="صورة المنشور">` : '';
+          
           postItem.innerHTML = `
             <div class="post-actions">
               <button class="btn btn-warning btn-sm edit-btn" data-index="${index}">تعديل</button>
@@ -559,6 +594,7 @@
               ${post.العنوان || 'بدون عنوان'}
               <span class="post-type ${typeClass}">${post.النوع || 'غير محدد'}</span>
             </h3>
+            ${imageHtml}
             <p>${formatPostContent(post.المحتوى || '')}</p>
             <small>${post.التاريخ || 'غير معروف'}</small>
           `;
@@ -604,6 +640,14 @@
         editPostTitleInput.value = post.العنوان || '';
         editPostContentTextarea.value = post.المحتوى || '';
         
+        // عرض معاينة الصورة الحالية إذا وجدت
+        if (post.الصورة) {
+          editImagePreview.src = post.الصورة;
+          editImagePreview.style.display = 'block';
+        } else {
+          editImagePreview.style.display = 'none';
+        }
+        
         editModal.style.display = 'flex';
       }
       
@@ -611,6 +655,8 @@
       function closeEditModal() {
         editModal.style.display = 'none';
         currentEditIndex = null;
+        editImagePreview.style.display = 'none';
+        editPostImageInput.value = '';
       }
       
       // حفظ التعديلات
@@ -620,18 +666,31 @@
         const type = editPostTypeSelect.value;
         const title = editPostTitleInput.value.trim();
         const content = editPostContentTextarea.value.trim();
+        const imageFile = editPostImageInput.files[0];
         
         if (!title || !content) {
           alert('الرجاء إدخال العنوان والمحتوى');
           return;
         }
         
+        // تحديث البيانات الأساسية
         currentPosts[currentEditIndex] = {
           ...currentPosts[currentEditIndex],
           النوع: type,
           العنوان: title,
           المحتوى: content
         };
+        
+        // إذا تم تحميل صورة جديدة، قم بتحميلها وحفظ الرابط
+        if (imageFile) {
+          try {
+            const imageUrl = await uploadImage(imageFile);
+            currentPosts[currentEditIndex].الصورة = imageUrl;
+          } catch (error) {
+            showMessage(addPostMessageDiv, `حدث خطأ أثناء تحميل الصورة: ${error.message}`, 'error');
+            return;
+          }
+        }
         
         await savePosts();
         closeEditModal();
@@ -645,6 +704,54 @@
           currentPosts.splice(index, 1);
           await savePosts();
         }
+      }
+      
+      // دالة لتحميل الصورة إلى GitHub
+      async function uploadImage(file) {
+        const token = tokenInput.value.trim();
+        const repo = repoInput.value.trim();
+        const username = usernameInput.value.trim();
+        
+        if (!token || !repo || !username) {
+          throw new Error('الرجاء ملء جميع الحقول في قسم الإعدادات');
+        }
+        
+        // إنشاء اسم فريد للصورة
+        const timestamp = new Date().getTime();
+        const extension = file.name.split('.').pop();
+        const filename = `post-image-${timestamp}.${extension}`;
+        const path = `images/${filename}`;
+        
+        // قراءة الملف كـ base64
+        const reader = new FileReader();
+        const fileContent = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        
+        const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
+        
+        const response = await fetch(apiUrl, {
+          method: "PUT",
+          headers: {
+            "Authorization": `token ${token}`,
+            "Content-Type": "application/json",
+            "Accept": "application/vnd.github.v3+json"
+          },
+          body: JSON.stringify({
+            message: "تحميل صورة جديدة للمنشور",
+            content: fileContent
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `خطأ في تحميل الصورة: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.content.download_url;
       }
       
       // دالة لحفظ المنشورات
@@ -726,6 +833,7 @@
         const type = postTypeSelect.value;
         const title = postTitleInput.value.trim();
         const content = postContentTextarea.value.trim();
+        const imageFile = postImageInput.files[0];
         
         if (!title || !content) {
           showMessage(addPostMessageDiv, 'الرجاء إدخال العنوان والمحتوى', 'error');
@@ -739,18 +847,57 @@
           التاريخ: new Date().toISOString().split('T')[0]
         };
         
+        // إذا تم تحميل صورة، قم بتحميلها وإضافة الرابط إلى المنشور
+        if (imageFile) {
+          try {
+            const imageUrl = await uploadImage(imageFile);
+            newPost.الصورة = imageUrl;
+          } catch (error) {
+            showMessage(addPostMessageDiv, `حدث خطأ أثناء تحميل الصورة: ${error.message}`, 'error');
+            return;
+          }
+        }
+        
         currentPosts.unshift(newPost);
         await savePosts();
         
         // مسح حقول الإدخال
         postTitleInput.value = '';
         postContentTextarea.value = '';
+        postImageInput.value = '';
+        imagePreview.style.display = 'none';
       });
       
       // مسح النموذج
       clearFormBtn.addEventListener('click', function() {
         postTitleInput.value = '';
         postContentTextarea.value = '';
+        postImageInput.value = '';
+        imagePreview.style.display = 'none';
+      });
+      
+      // معاينة الصورة قبل التحميل
+      postImageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+          };
+          reader.readAsDataURL(this.files[0]);
+        }
+      });
+      
+      // معاينة الصورة في نموذج التعديل
+      editPostImageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            editImagePreview.src = e.target.result;
+            editImagePreview.style.display = 'block';
+          };
+          reader.readAsDataURL(this.files[0]);
+        }
       });
       
       // معالج حدث لتحديث القائمة
