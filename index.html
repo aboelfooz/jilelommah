@@ -290,6 +290,7 @@
                 <select id="testType" required>
                     <option value="lessonTests">اختبار درس</option>
                     <option value="tajweedTests">اختبار تجويد</option>
+                    <option value="memorizationTests">اختبار حفظ</option>
                 </select>
             </div>
             
@@ -530,6 +531,11 @@
                         ${renderTests(student.tajweedTests, student.code, 'tajweedTests')}
                     </div>
                     
+                    <div class="tests-section">
+                        <h4>اختبارات الحفظ</h4>
+                        ${renderTests(student.memorizationTests, student.code, 'memorizationTests')}
+                    </div>
+                    
                     <div class="actions">
                         <button class="btn btn-primary edit-btn" data-code="${student.code}">تعديل الطالب</button>
                         <button class="btn btn-danger delete-btn" data-code="${student.code}">حذف الطالب</button>
@@ -737,7 +743,8 @@
                 code: code,
                 overallLevel: level,
                 lessonTests: [],
-                tajweedTests: []
+                tajweedTests: [],
+                memorizationTests: []
             };
             
             students.push(newStudent);
