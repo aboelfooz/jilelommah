@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - إدارة الطلاب</title>
+    <title>لوحة التحكم - إدارة الطلاب والاختبارات</title>
     <style>
         :root {
             --primary-color: #2c786c;
@@ -41,7 +41,7 @@
         .tabs {
             display: flex;
             margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #ddd;
         }
 
         .tab {
@@ -105,6 +105,11 @@
             color: white;
         }
 
+        .btn-warning {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+
         .student-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -151,15 +156,36 @@
             border-radius: 5px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-info {
+            flex: 1;
         }
 
         .test-name {
             font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .test-details {
+            display: flex;
+            gap: 10px;
+            font-size: 14px;
         }
 
         .test-result {
             color: var(--primary-color);
             font-weight: bold;
+        }
+
+        .test-date {
+            color: #666;
+        }
+
+        .test-actions {
+            display: flex;
+            gap: 5px;
         }
 
         .actions {
@@ -189,6 +215,20 @@
             max-width: 500px;
         }
 
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
         @media (max-width: 768px) {
             .student-list {
                 grid-template-columns: 1fr;
@@ -199,11 +239,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>لوحة إدارة الطلاب</h1>
+        <h1>لوحة إدارة الطلاب والاختبارات</h1>
         
         <div class="tabs">
             <div class="tab active" data-tab="students">قائمة الطلاب</div>
             <div class="tab" data-tab="add-student">إضافة طالب</div>
+            <div class="tab" data-tab="add-test">إضافة اختبار</div>
             <div class="tab" data-tab="settings">الإعدادات</div>
         </div>
         
@@ -234,6 +275,41 @@
             </div>
             
             <button id="saveStudentBtn" class="btn btn-primary">حفظ الطالب</button>
+            <div id="studentMessage" class="message"></div>
+        </div>
+        
+        <!-- إضافة اختبار جديد -->
+        <div class="tab-content" id="add-test">
+            <div class="form-group">
+                <label for="testStudent">اختر الطالب</label>
+                <select id="testStudent" required></select>
+            </div>
+            
+            <div class="form-group">
+                <label for="testType">نوع الاختبار</label>
+                <select id="testType" required>
+                    <option value="lessonTests">اختبار درس</option>
+                    <option value="tajweedTests">اختبار تجويد</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="testName">اسم الاختبار</label>
+                <input type="text" id="testName" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="testResult">النتيجة (من 100)</label>
+                <input type="number" id="testResult" min="0" max="100" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="testDate">تاريخ الاختبار</label>
+                <input type="date" id="testDate" required>
+            </div>
+            
+            <button id="saveTestBtn" class="btn btn-primary">حفظ الاختبار</button>
+            <div id="testMessage" class="message"></div>
         </div>
         
         <!-- الإعدادات -->
@@ -255,13 +331,17 @@
             </div>
             
             <button id="saveSettingsBtn" class="btn btn-primary">حفظ الإعدادات</button>
+            <div id="settingsMessage" class="message"></div>
         </div>
     </div>
 
-    <!-- نافذة التعديل -->
-    <div class="modal" id="editModal">
+    <!-- نافذة تعديل الطالب -->
+    <div class="modal" id="editStudentModal">
         <div class="modal-content">
-            <h3>تعديل بيانات الطالب</h3>
+            <div class="modal-header">
+                <h3>تعديل بيانات الطالب</h3>
+                <button class="close-btn" id="closeEditStudentModal">&times;</button>
+            </div>
             
             <div class="form-group">
                 <label for="editStudentName">اسم الطالب</label>
@@ -283,8 +363,38 @@
             </div>
             
             <div class="actions">
-                <button id="cancelEditBtn" class="btn btn-danger">إلغاء</button>
-                <button id="saveEditBtn" class="btn btn-primary">حفظ التعديلات</button>
+                <button id="cancelEditStudentBtn" class="btn btn-danger">إلغاء</button>
+                <button id="saveEditStudentBtn" class="btn btn-primary">حفظ التعديلات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل الاختبار -->
+    <div class="modal" id="editTestModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تعديل بيانات الاختبار</h3>
+                <button class="close-btn" id="closeEditTestModal">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="editTestName">اسم الاختبار</label>
+                <input type="text" id="editTestName" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="editTestResult">النتيجة (من 100)</label>
+                <input type="number" id="editTestResult" min="0" max="100" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="editTestDate">تاريخ الاختبار</label>
+                <input type="date" id="editTestDate" required>
+            </div>
+            
+            <div class="actions">
+                <button id="cancelEditTestBtn" class="btn btn-danger">إلغاء</button>
+                <button id="saveEditTestBtn" class="btn btn-primary">حفظ التعديلات</button>
             </div>
         </div>
     </div>
@@ -293,6 +403,7 @@
         // بيانات التطبيق
         let students = [];
         let currentEditStudent = null;
+        let currentEditTest = { studentCode: null, testType: null, testIndex: null };
         let githubToken = '';
         let repoOwner = 'aboelfooz';
         let repoName = 'islamic-site';
@@ -302,7 +413,8 @@
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
         const studentsList = document.getElementById('studentsList');
-        const editModal = document.getElementById('editModal');
+        const editStudentModal = document.getElementById('editStudentModal');
+        const editTestModal = document.getElementById('editTestModal');
 
         // تهيئة التطبيق
         document.addEventListener('DOMContentLoaded', function() {
@@ -333,6 +445,10 @@
                     
                     tab.classList.add('active');
                     document.getElementById(tab.dataset.tab).classList.add('active');
+                    
+                    if (tab.dataset.tab === 'add-test') {
+                        updateTestStudentSelect();
+                    }
                 });
             });
             
@@ -342,12 +458,18 @@
             // حفظ طالب جديد
             document.getElementById('saveStudentBtn').addEventListener('click', addStudent);
             
-            // أحداث نافذة التعديل
-            document.getElementById('cancelEditBtn').addEventListener('click', () => {
-                editModal.style.display = 'none';
-            });
+            // حفظ اختبار جديد
+            document.getElementById('saveTestBtn').addEventListener('click', addTest);
             
-            document.getElementById('saveEditBtn').addEventListener('click', saveStudentEdit);
+            // أحداث نافذة تعديل الطالب
+            document.getElementById('closeEditStudentModal').addEventListener('click', closeEditStudentModal);
+            document.getElementById('cancelEditStudentBtn').addEventListener('click', closeEditStudentModal);
+            document.getElementById('saveEditStudentBtn').addEventListener('click', saveStudentEdit);
+            
+            // أحداث نافذة تعديل الاختبار
+            document.getElementById('closeEditTestModal').addEventListener('click', closeEditTestModal);
+            document.getElementById('cancelEditTestBtn').addEventListener('click', closeEditTestModal);
+            document.getElementById('saveEditTestBtn').addEventListener('click', saveTestEdit);
         }
 
         // تحميل بيانات الطلاب من GitHub
@@ -363,12 +485,15 @@
                     const content = atob(data.content);
                     students = JSON.parse(content);
                     renderStudents();
-                } else {
+                } else if (response.status === 404) {
                     students = [];
                     renderStudents();
+                } else {
+                    throw new Error('فشل في جلب بيانات الطلاب');
                 }
             } catch (error) {
                 console.error('Error loading students:', error);
+                showMessage('studentMessage', `حدث خطأ أثناء جلب البيانات: ${error.message}`, 'error');
                 students = [];
                 renderStudents();
             }
@@ -397,17 +522,17 @@
                     
                     <div class="tests-section">
                         <h4>اختبارات الدروس</h4>
-                        ${renderTests(student.lessonTests)}
+                        ${renderTests(student.lessonTests, student.code, 'lessonTests')}
                     </div>
                     
                     <div class="tests-section">
                         <h4>اختبارات التجويد</h4>
-                        ${renderTests(student.tajweedTests)}
+                        ${renderTests(student.tajweedTests, student.code, 'tajweedTests')}
                     </div>
                     
                     <div class="actions">
-                        <button class="btn btn-primary edit-btn" data-code="${student.code}">تعديل</button>
-                        <button class="btn btn-danger delete-btn" data-code="${student.code}">حذف</button>
+                        <button class="btn btn-primary edit-btn" data-code="${student.code}">تعديل الطالب</button>
+                        <button class="btn btn-danger delete-btn" data-code="${student.code}">حذف الطالب</button>
                     </div>
                 `;
                 
@@ -418,7 +543,7 @@
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const code = e.target.getAttribute('data-code');
-                    openEditModal(code);
+                    openEditStudentModal(code);
                 });
             });
             
@@ -431,21 +556,65 @@
         }
 
         // عرض الاختبارات
-        function renderTests(tests) {
+        function renderTests(tests, studentCode, testType) {
             if (!tests || tests.length === 0) {
-                return '<p>لا توجد اختبارات</p>';
+                return '<p>لا توجد اختبارات مسجلة</p>';
             }
             
-            return tests.map(test => `
+            return tests.map((test, index) => `
                 <div class="test-item">
-                    <div class="test-name">${test.lessonName || test.testName}</div>
-                    <div class="test-result">${test.result}%</div>
+                    <div class="test-info">
+                        <div class="test-name">${test.lessonName || test.testName}</div>
+                        <div class="test-details">
+                            <span class="test-result">${test.result}%</span>
+                            <span class="test-date">${formatDate(test.date)}</span>
+                        </div>
+                    </div>
+                    <div class="test-actions">
+                        <button class="btn btn-warning edit-test-btn" 
+                                data-student-code="${studentCode}" 
+                                data-test-type="${testType}" 
+                                data-test-index="${index}">
+                            تعديل
+                        </button>
+                        <button class="btn btn-danger delete-test-btn" 
+                                data-student-code="${studentCode}" 
+                                data-test-type="${testType}" 
+                                data-test-index="${index}">
+                            حذف
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
 
-        // فتح نافذة التعديل
-        function openEditModal(code) {
+        // تحديث قائمة الطلاب في تبويب إضافة اختبار
+        function updateTestStudentSelect() {
+            const select = document.getElementById('testStudent');
+            select.innerHTML = '';
+            
+            if (students.length === 0) {
+                select.innerHTML = '<option value="">لا يوجد طلاب مسجلين</option>';
+                return;
+            }
+            
+            students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.code;
+                option.textContent = `${student.name} (${student.code})`;
+                select.appendChild(option);
+            });
+        }
+
+        // تنسيق التاريخ
+        function formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ar-EG');
+        }
+
+        // فتح نافذة تعديل الطالب
+        function openEditStudentModal(code) {
             const student = students.find(s => s.code === code);
             if (!student) return;
             
@@ -455,28 +624,96 @@
             document.getElementById('editStudentCode').value = student.code;
             document.getElementById('editStudentLevel').value = student.overallLevel;
             
-            editModal.style.display = 'flex';
+            editStudentModal.style.display = 'flex';
         }
 
-        // حفظ التعديلات
+        // إغلاق نافذة تعديل الطالب
+        function closeEditStudentModal() {
+            editStudentModal.style.display = 'none';
+            currentEditStudent = null;
+        }
+
+        // حفظ تعديلات الطالب
         async function saveStudentEdit() {
             if (!currentEditStudent) return;
             
             currentEditStudent.name = document.getElementById('editStudentName').value;
             currentEditStudent.overallLevel = document.getElementById('editStudentLevel').value;
             
-            await saveStudents();
-            editModal.style.display = 'none';
-            renderStudents();
+            const saved = await saveStudents();
+            if (saved) {
+                closeEditStudentModal();
+                renderStudents();
+                showMessage('studentMessage', 'تم تحديث بيانات الطالب بنجاح', 'success');
+            }
+        }
+
+        // فتح نافذة تعديل الاختبار
+        function openEditTestModal(studentCode, testType, testIndex) {
+            const student = students.find(s => s.code === studentCode);
+            if (!student || !student[testType] || !student[testType][testIndex]) return;
+            
+            currentEditTest = { studentCode, testType, testIndex };
+            const test = student[testType][testIndex];
+            
+            document.getElementById('editTestName').value = test.lessonName || test.testName;
+            document.getElementById('editTestResult').value = test.result;
+            document.getElementById('editTestDate').value = test.date;
+            
+            editTestModal.style.display = 'flex';
+        }
+
+        // إغلاق نافذة تعديل الاختبار
+        function closeEditTestModal() {
+            editTestModal.style.display = 'none';
+            currentEditTest = { studentCode: null, testType: null, testIndex: null };
+        }
+
+        // حفظ تعديلات الاختبار
+        async function saveTestEdit() {
+            const { studentCode, testType, testIndex } = currentEditTest;
+            const student = students.find(s => s.code === studentCode);
+            
+            if (!student || !student[testType] || !student[testType][testIndex]) return;
+            
+            const test = student[testType][testIndex];
+            test.lessonName = test.testName = document.getElementById('editTestName').value;
+            test.result = parseInt(document.getElementById('editTestResult').value);
+            test.date = document.getElementById('editTestDate').value;
+            
+            const saved = await saveStudents();
+            if (saved) {
+                closeEditTestModal();
+                renderStudents();
+                showMessage('testMessage', 'تم تحديث بيانات الاختبار بنجاح', 'success');
+            }
         }
 
         // حذف طالب
         async function deleteStudent(code) {
-            if (!confirm('هل أنت متأكد من حذف هذا الطالب؟')) return;
+            if (!confirm('هل أنت متأكد من حذف هذا الطالب؟ سيتم حذف جميع اختباراته أيضاً.')) return;
             
             students = students.filter(s => s.code !== code);
-            await saveStudents();
-            renderStudents();
+            const saved = await saveStudents();
+            if (saved) {
+                renderStudents();
+                showMessage('studentMessage', 'تم حذف الطالب بنجاح', 'success');
+            }
+        }
+
+        // حذف اختبار
+        async function deleteTest(studentCode, testType, testIndex) {
+            if (!confirm('هل أنت متأكد من حذف هذا الاختبار؟')) return;
+            
+            const student = students.find(s => s.code === studentCode);
+            if (!student || !student[testType]) return;
+            
+            student[testType].splice(testIndex, 1);
+            const saved = await saveStudents();
+            if (saved) {
+                renderStudents();
+                showMessage('testMessage', 'تم حذف الاختبار بنجاح', 'success');
+            }
         }
 
         // إضافة طالب جديد
@@ -486,12 +723,12 @@
             const level = document.getElementById('newStudentLevel').value;
             
             if (!name || !code) {
-                alert('الرجاء إدخال اسم الطالب وكود الدخول');
+                showMessage('studentMessage', 'الرجاء إدخال اسم الطالب وكود الدخول', 'error');
                 return;
             }
             
             if (students.some(s => s.code === code)) {
-                alert('كود الدخول هذا مستخدم بالفعل');
+                showMessage('studentMessage', 'كود الدخول هذا مستخدم بالفعل', 'error');
                 return;
             }
             
@@ -504,19 +741,62 @@
             };
             
             students.push(newStudent);
-            await saveStudents();
+            const saved = await saveStudents();
             
-            // مسح الحقول
-            document.getElementById('newStudentName').value = '';
-            document.getElementById('newStudentCode').value = '';
+            if (saved) {
+                // مسح الحقول
+                document.getElementById('newStudentName').value = '';
+                document.getElementById('newStudentCode').value = '';
+                
+                renderStudents();
+                updateTestStudentSelect();
+                showMessage('studentMessage', 'تم إضافة الطالب بنجاح', 'success');
+            }
+        }
+
+        // إضافة اختبار جديد
+        async function addTest() {
+            const studentCode = document.getElementById('testStudent').value;
+            const testType = document.getElementById('testType').value;
+            const testName = document.getElementById('testName').value.trim();
+            const testResult = document.getElementById('testResult').value;
+            const testDate = document.getElementById('testDate').value;
             
-            renderStudents();
+            if (!studentCode || !testName || !testResult || !testDate) {
+                showMessage('testMessage', 'الرجاء تعبئة جميع حقول الاختبار', 'error');
+                return;
+            }
+            
+            const student = students.find(s => s.code === studentCode);
+            if (!student) {
+                showMessage('testMessage', 'الطالب المحدد غير موجود', 'error');
+                return;
+            }
+            
+            const newTest = {
+                [testType === 'lessonTests' ? 'lessonName' : 'testName']: testName,
+                result: parseInt(testResult),
+                date: testDate
+            };
+            
+            student[testType].push(newTest);
+            const saved = await saveStudents();
+            
+            if (saved) {
+                // مسح الحقول
+                document.getElementById('testName').value = '';
+                document.getElementById('testResult').value = '';
+                document.getElementById('testDate').value = '';
+                
+                renderStudents();
+                showMessage('testMessage', 'تم إضافة الاختبار بنجاح', 'success');
+            }
         }
 
         // حفظ البيانات إلى GitHub
         async function saveStudents() {
             if (!githubToken) {
-                alert('الرجاء إدخال GitHub Token في الإعدادات');
+                showMessage('settingsMessage', 'الرجاء إدخال GitHub Token في الإعدادات', 'error');
                 return false;
             }
             
@@ -529,7 +809,7 @@
                 
                 // إعداد بيانات الطلب
                 const requestData = {
-                    message: "تحديث بيانات الطلاب",
+                    message: "تحديث بيانات الطلاب والاختبارات",
                     content: contentBase64,
                     sha: fileSha || undefined
                 };
@@ -545,7 +825,8 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('فشل في حفظ البيانات');
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'فشل في حفظ البيانات');
                 }
                 
                 const data = await response.json();
@@ -554,7 +835,7 @@
                 return true;
             } catch (error) {
                 console.error('Error saving students:', error);
-                alert(`حدث خطأ أثناء الحفظ: ${error.message}`);
+                showMessage('settingsMessage', `حدث خطأ أثناء الحفظ: ${error.message}`, 'error');
                 return false;
             }
         }
@@ -565,6 +846,11 @@
             repoOwner = document.getElementById('repoOwner').value.trim();
             repoName = document.getElementById('repoName').value.trim();
             
+            if (!githubToken) {
+                showMessage('settingsMessage', 'الرجاء إدخال GitHub Token', 'error');
+                return;
+            }
+            
             const settings = {
                 token: githubToken,
                 owner: repoOwner,
@@ -572,8 +858,41 @@
             };
             
             localStorage.setItem('adminSettings', JSON.stringify(settings));
-            alert('تم حفظ الإعدادات بنجاح');
+            showMessage('settingsMessage', 'تم حفظ الإعدادات بنجاح', 'success');
         }
+
+        // عرض الرسائل
+        function showMessage(elementId, text, type) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            element.textContent = text;
+            element.className = 'message ' + type;
+            element.style.display = 'block';
+            
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+
+        // معالجة أحداث النقر على أزرار تعديل وحذف الاختبارات
+        document.addEventListener('click', function(e) {
+            // تعديل الاختبار
+            if (e.target.classList.contains('edit-test-btn')) {
+                const studentCode = e.target.getAttribute('data-student-code');
+                const testType = e.target.getAttribute('data-test-type');
+                const testIndex = e.target.getAttribute('data-test-index');
+                openEditTestModal(studentCode, testType, testIndex);
+            }
+            
+            // حذف الاختبار
+            if (e.target.classList.contains('delete-test-btn')) {
+                const studentCode = e.target.getAttribute('data-student-code');
+                const testType = e.target.getAttribute('data-test-type');
+                const testIndex = e.target.getAttribute('data-test-index');
+                deleteTest(studentCode, testType, testIndex);
+            }
+        });
     </script>
 </body>
 </html>
