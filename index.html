@@ -473,18 +473,21 @@
             document.getElementById('saveEditTestBtn').addEventListener('click', saveTestEdit);
         }
 
-        // تحميل بيانات الطلاب من GitHub
+        // تحميل بيانات الطلاب من GitHub (الدالة المعدلة)
         async function loadStudents() {
             try {
                 const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/students.json`);
                 
                 if (response.ok) {
                     const data = await response.json();
-                    fileSha = data.sha;
-                    
-                    // تحويل المحتوى من Base64
-                    const content = atob(data.content);
+                    const binary = atob(data.content);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) {
+                        bytes[i] = binary.charCodeAt(i);
+                    }
+                    const content = new TextDecoder('utf-8').decode(bytes);
                     students = JSON.parse(content);
+                    fileSha = data.sha;
                     renderStudents();
                 } else if (response.status === 404) {
                     students = [];
