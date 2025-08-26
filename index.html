@@ -2,9 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - إدارة الطلاب والاختبارات</title>
+    <title>لوحة التحكم - معهد جيل الأمة</title>
     <style>
         :root {
             --primary-color: #2c786c;
@@ -12,49 +11,106 @@
             --accent-color: #f8b400;
             --text-color: #333;
             --light-bg: #faf5e4;
-            --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --success-dark: #2e7d32;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --warning-light: #ffc107;
+            --danger: #f44336;
+            --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
         }
 
         body {
             font-family: 'Tajawal', sans-serif;
-            background-color: #f5f5f5;
-            color: var(--text-color);
+            background-color: #f9f9f9;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            color: var(--text-color);
             line-height: 1.6;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: var(--card-shadow);
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
         }
 
-        h1, h2, h3 {
-            color: var(--secondary-color);
-            text-align: center;
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header::after, .header::before {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .header::after {
+            bottom: -50px;
+            right: -50px;
+            width: 100px;
+            height: 100px;
+        }
+
+        .header::before {
+            top: -30px;
+            left: -30px;
+            width: 80px;
+            height: 80px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 20px 0;
+            padding: 0 15px;
+            animation: fadeIn 0.5s ease;
+            box-sizing: border-box;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
         }
 
         .tabs {
             display: flex;
             margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 2px solid rgba(44, 120, 108, 0.1);
+            overflow-x: auto;
         }
 
         .tab {
-            padding: 10px 20px;
+            padding: 12px 20px;
             cursor: pointer;
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
+            white-space: nowrap;
+            font-weight: 500;
         }
 
         .tab.active {
             border-bottom-color: var(--primary-color);
             color: var(--primary-color);
-            font-weight: bold;
         }
 
         .tab-content {
@@ -64,6 +120,28 @@
 
         .tab-content.active {
             display: block;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            color: var(--secondary-color);
+            border-bottom: 2px solid rgba(44, 120, 108, 0.1);
+            padding-bottom: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-left: 8px;
+            color: var(--accent-color);
         }
 
         .form-group {
@@ -83,6 +161,7 @@
             border-radius: 6px;
             font-family: 'Tajawal', sans-serif;
             font-size: 16px;
+            box-sizing: border-box;
         }
 
         button {
@@ -96,31 +175,45 @@
         }
 
         .btn-primary {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
+            box-shadow: 0 4px 10px rgba(44, 120, 108, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(44, 120, 108, 0.4);
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
         }
 
         .btn-danger {
-            background-color: #f44336;
+            background-color: var(--danger);
             color: white;
         }
 
         .btn-warning {
-            background-color: var(--accent-color);
-            color: #000;
+            background-color: var(--warning);
+            color: white;
         }
 
         .student-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr;
+            gap: 15px;
         }
 
         .student-card {
-            background: white;
+            background-color: white;
             border-radius: 8px;
-            padding: 20px;
-            box-shadow: var(--card-shadow);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            transition: all 0.3s ease;
+            border-top: 3px solid rgba(44, 120, 108, 0.2);
+        }
+
+        .student-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .student-header {
@@ -139,10 +232,11 @@
         }
 
         .student-code {
-            background: #e3f2fd;
+            background: rgba(44, 120, 108, 0.1);
             padding: 3px 10px;
             border-radius: 20px;
             font-size: 14px;
+            color: var(--primary-color);
         }
 
         .tests-section {
@@ -213,6 +307,8 @@
             border-radius: 10px;
             width: 90%;
             max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -220,6 +316,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
         }
 
         .close-btn {
@@ -227,112 +325,256 @@
             border: none;
             font-size: 24px;
             cursor: pointer;
+            color: #666;
         }
 
-        @media (max-width: 768px) {
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .success {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        .error {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(244, 67, 54, 0.2);
+        }
+
+        .no-data {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+            background-color: rgba(0,0,0,0.02);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .no-data i {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+
+        @media (min-width: 768px) {
+            .header {
+                padding: 25px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                max-width: 1000px;
+                margin: 30px auto;
+                padding: 0 20px;
+            }
+            
+            .dashboard-card {
+                padding: 30px;
+                border-radius: 12px;
+            }
+            
             .student-list {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 20px;
+            }
+            
+            .student-card {
+                padding: 20px;
+                border-radius: 10px;
+            }
+            
+            .section-title {
+                font-size: 1.4rem;
+                padding-bottom: 12px;
             }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <div class="header">
+        <h1>لوحة تحكم معهد جيل الأمة</h1>
+    </div>
+    
     <div class="container">
-        <h1>لوحة إدارة الطلاب والاختبارات</h1>
-        
-        <div class="tabs">
-            <div class="tab active" data-tab="students">قائمة الطلاب</div>
-            <div class="tab" data-tab="add-student">إضافة طالب</div>
-            <div class="tab" data-tab="add-test">إضافة اختبار</div>
-            <div class="tab" data-tab="settings">الإعدادات</div>
-        </div>
-        
-        <!-- قائمة الطلاب -->
-        <div class="tab-content active" id="students">
-            <div class="student-list" id="studentsList"></div>
-        </div>
-        
-        <!-- إضافة طالب جديد -->
-        <div class="tab-content" id="add-student">
-            <div class="form-group">
-                <label for="newStudentName">اسم الطالب</label>
-                <input type="text" id="newStudentName" required>
+        <div class="dashboard-card">
+            <div class="tabs">
+                <div class="tab active" data-tab="students">إدارة الطلاب</div>
+                <div class="tab" data-tab="add-student">إضافة طالب جديد</div>
+                <div class="tab" data-tab="add-test">إضافة اختبار</div>
+                <div class="tab" data-tab="monthly-pages">إدارة الصفحات الشهرية</div>
+                <div class="tab" data-tab="settings">الإعدادات</div>
             </div>
             
-            <div class="form-group">
-                <label for="newStudentCode">كود الدخول</label>
-                <input type="text" id="newStudentCode" required>
+            <!-- إدارة الطلاب -->
+            <div class="tab-content active" id="students">
+                <h3 class="section-title">
+                    <i class="fas fa-users"></i>
+                    قائمة الطلاب
+                </h3>
+                <div class="student-list" id="studentsList"></div>
             </div>
             
-            <div class="form-group">
-                <label for="newStudentLevel">المستوى</label>
-                <select id="newStudentLevel">
-                    <option value="مبتدئ">مبتدئ</option>
-                    <option value="متوسط">متوسط</option>
-                    <option value="متقدم">متقدم</option>
-                </select>
+            <!-- إضافة طالب جديد -->
+            <div class="tab-content" id="add-student">
+                <h3 class="section-title">
+                    <i class="fas fa-user-plus"></i>
+                    إضافة طالب جديد
+                </h3>
+                
+                <div class="form-group">
+                    <label for="newStudentName">اسم الطالب</label>
+                    <input type="text" id="newStudentName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newStudentCode">كود الدخول</label>
+                    <input type="text" id="newStudentCode" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newStudentLevel">المستوى العام</label>
+                    <select id="newStudentLevel">
+                        <option value="مبتدئ">مبتدئ</option>
+                        <option value="متوسط">متوسط</option>
+                        <option value="متقدم">متقدم</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newStudentImage">  ()</label>
+                    <input type="text" id="newStudentImage" ">
+                </div>
+                
+                <button id="saveStudentBtn" class="btn-primary">حفظ الطالب</button>
+                <div id="studentMessage" class="message"></div>
             </div>
             
-            <button id="saveStudentBtn" class="btn btn-primary">حفظ الطالب</button>
-            <div id="studentMessage" class="message"></div>
-        </div>
-        
-        <!-- إضافة اختبار جديد -->
-        <div class="tab-content" id="add-test">
-            <div class="form-group">
-                <label for="testStudent">اختر الطالب</label>
-                <select id="testStudent" required></select>
+            <!-- إضافة اختبار -->
+            <div class="tab-content" id="add-test">
+                <h3 class="section-title">
+                    <i class="fas fa-clipboard-check"></i>
+                    إضافة اختبار جديد
+                </h3>
+                
+                <div class="form-group">
+                    <label for="testStudent">اختر الطالب</label>
+                    <select id="testStudent" required></select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="testType">نوع الاختبار</label>
+                    <select id="testType" required>
+                        <option value="lessonTests">اختبار درس</option>
+                        <option value="tajweedTests">اختبار تجويد</option>
+                        <option value="memorizationTests">اختبار قرآن</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="testName">اسم الاختبار</label>
+                    <input type="text" id="testName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="testResult">النتيجة (من 100)</label>
+                    <input type="number" id="testResult" min="0" max="100" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="testDate">تاريخ الاختبار</label>
+                    <input type="date" id="testDate" required>
+                </div>
+                
+                <button id="saveTestBtn" class="btn-primary">حفظ الاختبار</button>
+                <div id="testMessage" class="message"></div>
             </div>
             
-            <div class="form-group">
-                <label for="testType">نوع الاختبار</label>
-                <select id="testType" required>
-                    <option value="lessonTests">اختبار درس</option>
-                    <option value="tajweedTests">اختبار تجويد</option>
-                    <option value="memorizationTests">اختبار قران</option>
-                </select>
+            <!-- إدارة الصفحات الشهرية -->
+            <div class="tab-content" id="monthly-pages">
+                <h3 class="section-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    إدارة الصفحات المحفوظة شهرياً
+                </h3>
+                
+                <div class="form-group">
+                    <label for="pagesStudent">اختر الطالب</label>
+                    <select id="pagesStudent" required></select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pagesMonth">الشهر</label>
+                    <select id="pagesMonth" required>
+                        <option value="1">يناير</option>
+                        <option value="2">فبراير</option>
+                        <option value="3">مارس</option>
+                        <option value="4">أبريل</option>
+                        <option value="5">مايو</option>
+                        <option value="6">يونيو</option>
+                        <option value="7">يوليو</option>
+                        <option value="8">أغسطس</option>
+                        <option value="9">سبتمبر</option>
+                        <option value="10">أكتوبر</option>
+                        <option value="11">نوفمبر</option>
+                        <option value="12">ديسمبر</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pagesYear">السنة</label>
+                    <input type="number" id="pagesYear" min="2020" max="2030" value="2025" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pagesCount">عدد الصفحات المحفوظة</label>
+                    <input type="number" id="pagesCount" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pagesGoal">الهدف الشهري (عدد الصفحات)</label>
+                    <input type="number" id="pagesGoal" min="1" value="" required>
+                </div>
+                
+                <button id="savePagesBtn" class="btn-primary">حفظ البيانات</button>
+                <div id="pagesMessage" class="message"></div>
             </div>
             
-            <div class="form-group">
-                <label for="testName">اسم الاختبار</label>
-                <input type="text" id="testName" required>
+            <!-- الإعدادات -->
+            <div class="tab-content" id="settings">
+                <h3 class="section-title">
+                    <i class="fas fa-cog"></i>
+                    إعدادات النظام
+                </h3>
+                
+                <div class="form-group">
+                    <label for="githubToken">GitHub Token</label>
+                    <input type="password" id="githubToken">
+                    <small>يجب أن يكون لديك صلاحيات repo</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="repoOwner">مالك المستودع</label>
+                    <input type="text" id="repoOwner" value="aboelfooz">
+                </div>
+                
+                <div class="form-group">
+                    <label for="repoName">اسم المستودع</label>
+                    <input type="text" id="repoName" value="islamic-site">
+                </div>
+                
+                <button id="saveSettingsBtn" class="btn-primary">حفظ الإعدادات</button>
+                <div id="settingsMessage" class="message"></div>
             </div>
-            
-            <div class="form-group">
-                <label for="testResult">النتيجة (من 100)</label>
-                <input type="number" id="testResult" min="0" max="100" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="testDate">تاريخ الاختبار</label>
-                <input type="date" id="testDate" required>
-            </div>
-            
-            <button id="saveTestBtn" class="btn btn-primary">حفظ الاختبار</button>
-            <div id="testMessage" class="message"></div>
-        </div>
-        
-        <!-- الإعدادات -->
-        <div class="tab-content" id="settings">
-            <div class="form-group">
-                <label for="githubToken">GitHub Token</label>
-                <input type="password" id="githubToken">
-                <small>يجب أن يكون لديك صلاحيات repo</small>
-            </div>
-            
-            <div class="form-group">
-                <label for="repoOwner">مالك المستودع</label>
-                <input type="text" id="repoOwner" value="aboelfooz">
-            </div>
-            
-            <div class="form-group">
-                <label for="repoName">اسم المستودع</label>
-                <input type="text" id="repoName" value="islamic-site">
-            </div>
-            
-            <button id="saveSettingsBtn" class="btn btn-primary">حفظ الإعدادات</button>
-            <div id="settingsMessage" class="message"></div>
         </div>
     </div>
 
@@ -363,9 +605,14 @@
                 </select>
             </div>
             
+            <div class="form-group">
+                <label for="editStudentImage">  ()</label>
+                <input type="text" id="editStudentImage">
+            </div>
+            
             <div class="actions">
-                <button id="cancelEditStudentBtn" class="btn btn-danger">إلغاء</button>
-                <button id="saveEditStudentBtn" class="btn btn-primary">حفظ التعديلات</button>
+                <button id="cancelEditStudentBtn" class="btn-danger">إلغاء</button>
+                <button id="saveEditStudentBtn" class="btn-primary">حفظ التعديلات</button>
             </div>
         </div>
     </div>
@@ -394,8 +641,8 @@
             </div>
             
             <div class="actions">
-                <button id="cancelEditTestBtn" class="btn btn-danger">إلغاء</button>
-                <button id="saveEditTestBtn" class="btn btn-primary">حفظ التعديلات</button>
+                <button id="cancelEditTestBtn" class="btn-danger">إلغاء</button>
+                <button id="saveEditTestBtn" class="btn-primary">حفظ التعديلات</button>
             </div>
         </div>
     </div>
@@ -409,13 +656,6 @@
         let repoOwner = 'aboelfooz';
         let repoName = 'islamic-site';
         let fileSha = null;
-
-        // العناصر
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const studentsList = document.getElementById('studentsList');
-        const editStudentModal = document.getElementById('editStudentModal');
-        const editTestModal = document.getElementById('editTestModal');
 
         // تهيئة التطبيق
         document.addEventListener('DOMContentLoaded', function() {
@@ -439,16 +679,16 @@
         // إعداد مستمعي الأحداث
         function setupEventListeners() {
             // تبديل التبويبات
-            tabs.forEach(tab => {
+            document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tabContents.forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                     
                     tab.classList.add('active');
                     document.getElementById(tab.dataset.tab).classList.add('active');
                     
-                    if (tab.dataset.tab === 'add-test') {
-                        updateTestStudentSelect();
+                    if (tab.dataset.tab === 'add-test' || tab.dataset.tab === 'monthly-pages') {
+                        updateStudentSelects();
                     }
                 });
             });
@@ -462,6 +702,9 @@
             // حفظ اختبار جديد
             document.getElementById('saveTestBtn').addEventListener('click', addTest);
             
+            // حفظ صفحات شهرية
+            document.getElementById('savePagesBtn').addEventListener('click', addMonthlyPages);
+            
             // أحداث نافذة تعديل الطالب
             document.getElementById('closeEditStudentModal').addEventListener('click', closeEditStudentModal);
             document.getElementById('cancelEditStudentBtn').addEventListener('click', closeEditStudentModal);
@@ -473,20 +716,23 @@
             document.getElementById('saveEditTestBtn').addEventListener('click', saveTestEdit);
         }
 
-        // تحميل بيانات الطلاب من GitHub (الدالة المعدلة)
+        // تحميل بيانات الطلاب من GitHub
         async function loadStudents() {
             try {
                 const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/students.json`);
                 
                 if (response.ok) {
                     const data = await response.json();
-                    const binary = atob(data.content);
-                    const bytes = new Uint8Array(binary.length);
-                    for (let i = 0; i < binary.length; i++) {
-                        bytes[i] = binary.charCodeAt(i);
+                    
+                    // استخدام TextDecoder لفك تشفير المحتوى بشكل صحيح للغة العربية
+                    const binaryString = atob(data.content);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
                     }
-                    const content = new TextDecoder('utf-8').decode(bytes);
-                    students = JSON.parse(content);
+                    const decodedString = new TextDecoder('utf-8').decode(bytes);
+                    
+                    students = JSON.parse(decodedString);
                     fileSha = data.sha;
                     renderStudents();
                 } else if (response.status === 404) {
@@ -505,10 +751,16 @@
 
         // عرض قائمة الطلاب
         function renderStudents() {
+            const studentsList = document.getElementById('studentsList');
             studentsList.innerHTML = '';
             
             if (students.length === 0) {
-                studentsList.innerHTML = '<p>لا يوجد طلاب مسجلين</p>';
+                studentsList.innerHTML = `
+                    <div class="no-data">
+                        <i class="far fa-folder-open"></i>
+                        <p>لا يوجد طلاب مسجلين</p>
+                    </div>
+                `;
                 return;
             }
             
@@ -522,7 +774,7 @@
                         <div class="student-code">${student.code}</div>
                     </div>
                     
-                    <div class="student-level">المستوى: ${student.overallLevel}</div>
+                    <div class="student-level">المستوى: ${student.overallLevel || 'غير محدد'}</div>
                     
                     <div class="tests-section">
                         <h4>اختبارات الدروس</h4>
@@ -535,13 +787,18 @@
                     </div>
                     
                     <div class="tests-section">
-                        <h4>اختبارات قران</h4>
+                        <h4>اختبارات القرآن</h4>
                         ${renderTests(student.memorizationTests, student.code, 'memorizationTests')}
                     </div>
                     
+                    <div class="tests-section">
+                        <h4>الصفحات المحفوظة</h4>
+                        ${renderMonthlyPages(student.monthlyPages || [])}
+                    </div>
+                    
                     <div class="actions">
-                        <button class="btn btn-primary edit-btn" data-code="${student.code}">تعديل الطالب</button>
-                        <button class="btn btn-danger delete-btn" data-code="${student.code}">حذف الطالب</button>
+                        <button class="btn-primary edit-btn" data-code="${student.code}">تعديل الطالب</button>
+                        <button class="btn-danger delete-btn" data-code="${student.code}">حذف الطالب</button>
                     </div>
                 `;
                 
@@ -580,13 +837,13 @@
                         </div>
                     </div>
                     <div class="test-actions">
-                        <button class="btn btn-warning edit-test-btn" 
+                        <button class="btn-warning edit-test-btn" 
                                 data-student-code="${studentCode}" 
                                 data-test-type="${testType}" 
                                 data-test-index="${index}">
                             تعديل
                         </button>
-                        <button class="btn btn-danger delete-test-btn" 
+                        <button class="btn-danger delete-test-btn" 
                                 data-student-code="${studentCode}" 
                                 data-test-type="${testType}" 
                                 data-test-index="${index}">
@@ -597,13 +854,54 @@
             `).join('');
         }
 
-        // تحديث قائمة الطلاب في تبويب إضافة اختبار
-        function updateTestStudentSelect() {
-            const select = document.getElementById('testStudent');
-            select.innerHTML = '';
+        // عرض الصفحات المحفوظة شهرياً
+        function renderMonthlyPages(monthlyPages) {
+            if (!monthlyPages || monthlyPages.length === 0) {
+                return '<p>لا توجد بيانات عن الصفحات المحفوظة</p>';
+            }
+            
+            // ترتيب البيانات من الأحدث إلى الأقدم
+            monthlyPages.sort((a, b) => new Date(b.year, b.month - 1) - new Date(a.year, a.month - 1));
+            
+            return monthlyPages.slice(0, 3).map(monthData => {
+                const monthNames = [
+                    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+                ];
+                
+                const monthName = monthNames[monthData.month - 1];
+                const pagesCount = monthData.pages || 0;
+                const goal = monthData.goal || 20;
+                const progressPercent = Math.min(100, (pagesCount / goal) * 100);
+                
+                return `
+                    <div class="test-item">
+                        <div class="test-info">
+                            <div class="test-name">${monthName} ${monthData.year}</div>
+                            <div class="test-details">
+                                <span class="test-result">${pagesCount} صفحة</span>
+                                <span class="test-date">الهدف: ${goal}</span>
+                            </div>
+                        </div>
+                        <div class="test-actions">
+                            <span>${progressPercent.toFixed(0)}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // تحديث قوائم اختيار الطلاب
+        function updateStudentSelects() {
+            const testSelect = document.getElementById('testStudent');
+            const pagesSelect = document.getElementById('pagesStudent');
+            
+            testSelect.innerHTML = '';
+            pagesSelect.innerHTML = '';
             
             if (students.length === 0) {
-                select.innerHTML = '<option value="">لا يوجد طلاب مسجلين</option>';
+                testSelect.innerHTML = '<option value="">لا يوجد طلاب مسجلين</option>';
+                pagesSelect.innerHTML = '<option value="">لا يوجد طلاب مسجلين</option>';
                 return;
             }
             
@@ -611,7 +909,9 @@
                 const option = document.createElement('option');
                 option.value = student.code;
                 option.textContent = `${student.name} (${student.code})`;
-                select.appendChild(option);
+                
+                testSelect.appendChild(option.cloneNode(true));
+                pagesSelect.appendChild(option.cloneNode(true));
             });
         }
 
@@ -631,14 +931,15 @@
             
             document.getElementById('editStudentName').value = student.name;
             document.getElementById('editStudentCode').value = student.code;
-            document.getElementById('editStudentLevel').value = student.overallLevel;
+            document.getElementById('editStudentLevel').value = student.overallLevel || 'مبتدئ';
+            document.getElementById('editStudentImage').value = student.image || '';
             
-            editStudentModal.style.display = 'flex';
+            document.getElementById('editStudentModal').style.display = 'flex';
         }
 
         // إغلاق نافذة تعديل الطالب
         function closeEditStudentModal() {
-            editStudentModal.style.display = 'none';
+            document.getElementById('editStudentModal').style.display = 'none';
             currentEditStudent = null;
         }
 
@@ -648,6 +949,7 @@
             
             currentEditStudent.name = document.getElementById('editStudentName').value;
             currentEditStudent.overallLevel = document.getElementById('editStudentLevel').value;
+            currentEditStudent.image = document.getElementById('editStudentImage').value;
             
             const saved = await saveStudents();
             if (saved) {
@@ -669,12 +971,12 @@
             document.getElementById('editTestResult').value = test.result;
             document.getElementById('editTestDate').value = test.date;
             
-            editTestModal.style.display = 'flex';
+            document.getElementById('editTestModal').style.display = 'flex';
         }
 
         // إغلاق نافذة تعديل الاختبار
         function closeEditTestModal() {
-            editTestModal.style.display = 'none';
+            document.getElementById('editTestModal').style.display = 'none';
             currentEditTest = { studentCode: null, testType: null, testIndex: null };
         }
 
@@ -730,6 +1032,7 @@
             const name = document.getElementById('newStudentName').value.trim();
             const code = document.getElementById('newStudentCode').value.trim();
             const level = document.getElementById('newStudentLevel').value;
+            const image = document.getElementById('newStudentImage').value.trim();
             
             if (!name || !code) {
                 showMessage('studentMessage', 'الرجاء إدخال اسم الطالب وكود الدخول', 'error');
@@ -745,9 +1048,11 @@
                 name: name,
                 code: code,
                 overallLevel: level,
+                image: image || null,
                 lessonTests: [],
                 tajweedTests: [],
-                memorizationTests: []
+                memorizationTests: [],
+                monthlyPages: []
             };
             
             students.push(newStudent);
@@ -757,9 +1062,10 @@
                 // مسح الحقول
                 document.getElementById('newStudentName').value = '';
                 document.getElementById('newStudentCode').value = '';
+                document.getElementById('newStudentImage').value = '';
                 
                 renderStudents();
-                updateTestStudentSelect();
+                updateStudentSelects();
                 showMessage('studentMessage', 'تم إضافة الطالب بنجاح', 'success');
             }
         }
@@ -789,6 +1095,10 @@
                 date: testDate
             };
             
+            if (!student[testType]) {
+                student[testType] = [];
+            }
+            
             student[testType].push(newTest);
             const saved = await saveStudents();
             
@@ -803,6 +1113,57 @@
             }
         }
 
+        // إضافة صفحات شهرية
+        async function addMonthlyPages() {
+            const studentCode = document.getElementById('pagesStudent').value;
+            const month = parseInt(document.getElementById('pagesMonth').value);
+            const year = parseInt(document.getElementById('pagesYear').value);
+            const pages = parseInt(document.getElementById('pagesCount').value);
+            const goal = parseInt(document.getElementById('pagesGoal').value);
+            
+            if (!studentCode || isNaN(month) || isNaN(year) || isNaN(pages) || isNaN(goal)) {
+                showMessage('pagesMessage', 'الرجاء تعبئة جميع الحقول', 'error');
+                return;
+            }
+            
+            const student = students.find(s => s.code === studentCode);
+            if (!student) {
+                showMessage('pagesMessage', 'الطالب المحدد غير موجود', 'error');
+                return;
+            }
+            
+            if (!student.monthlyPages) {
+                student.monthlyPages = [];
+            }
+            
+            // التحقق من وجود بيانات لنفس الشهر
+            const existingIndex = student.monthlyPages.findIndex(m => m.month === month && m.year === year);
+            
+            if (existingIndex !== -1) {
+                // تحديث البيانات الموجودة
+                student.monthlyPages[existingIndex].pages = pages;
+                student.monthlyPages[existingIndex].goal = goal;
+            } else {
+                // إضافة بيانات جديدة
+                student.monthlyPages.push({
+                    month: month,
+                    year: year,
+                    pages: pages,
+                    goal: goal
+                });
+            }
+            
+            const saved = await saveStudents();
+            
+            if (saved) {
+                // مسح الحقول
+                document.getElementById('pagesCount').value = '';
+                
+                renderStudents();
+                showMessage('pagesMessage', 'تم حفظ بيانات الصفحات بنجاح', 'success');
+            }
+        }
+
         // حفظ البيانات إلى GitHub
         async function saveStudents() {
             if (!githubToken) {
@@ -813,9 +1174,17 @@
             try {
                 const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/students.json`;
                 
-                // تحويل البيانات إلى JSON
+                // تحويل البيانات إلى JSON مع دعم الأحرف العربية
                 const content = JSON.stringify(students, null, 2);
-                const contentBase64 = btoa(unescape(encodeURIComponent(content)));
+                
+                // استخدام TextEncoder لتحويل المحتوى إلى UTF-8 بشكل صحيح
+                const encoder = new TextEncoder();
+                const encodedContent = encoder.encode(content);
+                let binaryString = '';
+                encodedContent.forEach(byte => {
+                    binaryString += String.fromCharCode(byte);
+                });
+                const contentBase64 = btoa(binaryString);
                 
                 // إعداد بيانات الطلب
                 const requestData = {
