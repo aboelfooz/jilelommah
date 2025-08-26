@@ -1121,10 +1121,7 @@
             const pages = parseInt(document.getElementById('pagesCount').value);
             const goal = parseInt(document.getElementById('pagesGoal').value);
             
-            if (!studentCode || isNaN(month) || isNaN(year) || isNaN(pages) || isNaN(goal)) {
-                showMessage('pagesMessage', 'الرجاء تعبئة جميع الحقول', 'error');
-                return;
-            }
+            
             
             const student = students.find(s => s.code === studentCode);
             if (!student) {
