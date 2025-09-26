@@ -1,134 +1,122 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<title>تحكم في الملف على GitHub</title>
-<style>
-  body { font-family: Arial; text-align: center; margin: 20px; }
-  table { margin: auto; border-collapse: collapse; width: 60%; }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-  th { background-color: #f2f2f2; }
-  input { padding: 5px; margin: 5px; }
-  button { padding: 5px 10px; margin: 5px; cursor: pointer; }
-</style>
+  <meta charset="UTF-8">
+  <title>التحكم في ملف JSON على GitHub</title>
+  <style>
+    body { font-family: Arial, sans-serif; direction: rtl; text-align: center; margin: 20px; }
+    input { width: 200px; margin: 5px; padding: 5px; }
+    button { margin: 10px; padding: 10px 20px; cursor: pointer; }
+    .student { margin-bottom: 10px; }
+  </style>
 </head>
 <body>
+  <h2>المسابقة</h2>
 
-<h1>تحكم في الملف على GitHub</h1>
+  <div id="studentsContainer"></div>
 
-<table id="dataTable">
-  <thead>
-    <tr>
-      <th>الاسم</th>
-      <th>المرتبة</th>
-      <th>أوامر</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <button onclick="addStudentInput()">➕ إضافة طالب جديد</button><br>
+  <button onclick="loadFile()">📥 عرض الطلاب</button>
+  <button onclick="saveFile()">💾 حفظ التعديلات</button>
 
-<h2>إضافة عنصر جديد</h2>
-<input id="newName" placeholder="الاسم">
-<input id="newTotal" placeholder="المرتبة">
-<button onclick="addItem()">إضافة</button>
+  <script>
+    const token = "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";   // GitHub Token
+    const owner = "aboelfooz";        // اسم المستخدم أو المنظمة
+    const repo = "islamic-site";      // اسم المستودع
+    const path = "data.json";          // مسار الملف
+    let sha = "";
+    let students = []; // مصفوفة لتخزين الطلاب
 
-<script>
-const owner = "aboelfooz";          // صاحب الريبو
-const repo = "islamic-site";        // اسم الريبو
-const pathFile = "data.json";       // اسم الملف
-const branch = "main";              // اسم الفرع
-const token = "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"; // ⚠️ حط التوكن هنا
+    function utf8_to_b64(str) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
 
-let sha = ""; // لتخزين sha الخاص بالملف
+    function b64_to_utf8(str) {
+      return decodeURIComponent(escape(atob(str)));
+    }
 
-// دالة جلب البيانات من GitHub
-async function fetchData() {
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
-    headers: { Authorization: `token ${token}` }
-  });
-  const data = await res.json();
-  sha = data.sha;
+    // إضافة حقل طالب جديد في الصفحة
+    function addStudentInput(name = "", total = "") {
+      const container = document.getElementById("studentsContainer");
+      const div = document.createElement("div");
+      div.className = "student";
+      div.innerHTML = `
+        <input type="text" placeholder="الاسم" value="${name}" class="name">
+        <input type="text" placeholder="المرتبة" value="${total}" class="total">
+        <button onclick="removeStudent(this)">❌ حذف</button>
+      `;
+      container.appendChild(div);
+    }
 
-  // التحويل مع UTF-8 لحل مشكلة اللغة
-  const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-  renderTable(content);
-}
+    // حذف صف طالب
+    function removeStudent(btn) {
+      btn.parentElement.remove();
+    }
 
-// عرض البيانات في الجدول
-function renderTable(items) {
-  const tbody = document.querySelector("#dataTable tbody");
-  tbody.innerHTML = "";
-  items.forEach((item, index) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><input value="${item.name}" onchange="updateItem(${index}, 'name', this.value)"></td>
-      <td><input value="${item.total}" onchange="updateItem(${index}, 'total', this.value)"></td>
-      <td><button onclick="deleteItem(${index})">حذف</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
+    // تحميل الملف من GitHub وعرض كل الطلاب
+    async function loadFile() {
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+      const res = await fetch(url, {
+        headers: { Authorization: `token ${token}` }
+      });
+      const data = await res.json();
 
-// تعديل عنصر
-async function updateItem(index, key, value) {
-  const content = await getFile();
-  content[index][key] = value;
-  await updateFile(content);
-}
+      if (data.content) {
+        sha = data.sha;
+        const text = b64_to_utf8(data.content);
+        try {
+          students = JSON.parse(text);
+          const container = document.getElementById("studentsContainer");
+          container.innerHTML = "";
+          students.forEach(s => addStudentInput(s.name, s.total));
+        } catch (e) {
+          alert("⚠️ JSON غير صالح: " + e.message);
+          console.error(text);
+        }
+      } else {
+        alert("❌ فشل تحميل الملف");
+        console.log(data);
+      }
+    }
 
-// حذف عنصر
-async function deleteItem(index) {
-  const content = await getFile();
-  content.splice(index, 1);
-  await updateFile(content);
-}
+    // حفظ كل الطلاب على GitHub
+    async function saveFile() {
+      const container = document.getElementById("studentsContainer");
+      const inputs = container.querySelectorAll(".student");
+      const newStudents = [];
 
-// إضافة عنصر جديد
-async function addItem() {
-  const name = document.getElementById("newName").value;
-  const total = document.getElementById("newTotal").value;
-  if(!name || !total) return alert("املأ جميع الحقول");
-  const content = await getFile();
-  content.push({name, total});
-  await updateFile(content);
-  document.getElementById("newName").value = "";
-  document.getElementById("newTotal").value = "";
-}
+      inputs.forEach(div => {
+        const name = div.querySelector(".name").value.trim();
+        const total = div.querySelector(".total").value.trim();
+        if (name && total) newStudents.push({ name, total });
+      });
 
-// جلب الملف من جديد
-async function getFile() {
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
-    headers: { Authorization: `token ${token}` }
-  });
-  const data = await res.json();
-  sha = data.sha;
-  return JSON.parse(decodeURIComponent(escape(atob(data.content))));
-}
+      const text = JSON.stringify(newStudents, null, 2);
+      const content = utf8_to_b64(text);
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
 
-// رفع التعديلات إلى GitHub
-async function updateFile(newContent) {
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `token ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: "تحديث الملف عبر الواجهة",
-      content: btoa(unescape(encodeURIComponent(JSON.stringify(newContent, null, 2)))),
-      sha: sha,
-      branch: branch
-    })
-  });
-  const data = await res.json();
-  sha = data.content.sha;
-  renderTable(newContent);
-  alert("✅ تم تحديث الملف بنجاح!");
-}
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          Authorization: `token ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "تحديث ملف JSON من خلال صفحة HTML",
+          content: content,
+          sha: sha
+        })
+      });
 
-// البداية
-fetchData();
-</script>
-
+      if (res.ok) {
+        alert("✅ تم الحفظ بنجاح!");
+        const result = await res.json();
+        sha = result.content.sha;
+      } else {
+        alert("❌ فشل الحفظ!");
+        console.log(await res.json());
+      }
+    }
+  </script>
 </body>
 </html>
