@@ -5,11 +5,11 @@
 <title>تحكم في الملف على GitHub</title>
 <style>
   body { font-family: Arial; text-align: center; margin: 20px; }
-  table { margin: auto; border-collapse: collapse; width: 50%; }
-  th, td { border: 1px solid #ccc; padding: 8px; }
+  table { margin: auto; border-collapse: collapse; width: 60%; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
   th { background-color: #f2f2f2; }
   input { padding: 5px; margin: 5px; }
-  button { padding: 5px 10px; margin: 5px; }
+  button { padding: 5px 10px; margin: 5px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -33,31 +33,24 @@
 <button onclick="addItem()">إضافة</button>
 
 <script>
-const owner = "aboelfooz";  
-const repo = "islamic-site";       
-const pathFile = "data.json"; 
-const branch = "main";     
-const token = "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"; 
+const owner = "aboelfooz";          // صاحب الريبو
+const repo = "islamic-site";        // اسم الريبو
+const pathFile = "data.json";       // اسم الملف
+const branch = "main";              // اسم الفرع
+const token = "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"; // ⚠️ حط التوكن هنا
 
-let sha = "";
+let sha = ""; // لتخزين sha الخاص بالملف
 
-// دوال دعم UTF-8 للـ Base64
-function utf8ToBase64(str) {
-  return btoa(unescape(encodeURIComponent(str)));
-}
-
-function base64ToUtf8(str) {
-  return decodeURIComponent(escape(atob(str)));
-}
-
-// جلب الملف من GitHub
+// دالة جلب البيانات من GitHub
 async function fetchData() {
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
     headers: { Authorization: `token ${token}` }
   });
   const data = await res.json();
   sha = data.sha;
-  const content = JSON.parse(base64ToUtf8(data.content));
+
+  // التحويل مع UTF-8 لحل مشكلة اللغة
+  const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
   renderTable(content);
 }
 
@@ -78,22 +71,14 @@ function renderTable(items) {
 
 // تعديل عنصر
 async function updateItem(index, key, value) {
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
-    headers: { Authorization: `token ${token}` }
-  });
-  const data = await res.json();
-  let content = JSON.parse(base64ToUtf8(data.content));
+  const content = await getFile();
   content[index][key] = value;
   await updateFile(content);
 }
 
 // حذف عنصر
 async function deleteItem(index) {
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
-    headers: { Authorization: `token ${token}` }
-  });
-  const data = await res.json();
-  let content = JSON.parse(base64ToUtf8(data.content));
+  const content = await getFile();
   content.splice(index, 1);
   await updateFile(content);
 }
@@ -103,18 +88,24 @@ async function addItem() {
   const name = document.getElementById("newName").value;
   const total = document.getElementById("newTotal").value;
   if(!name || !total) return alert("املأ جميع الحقول");
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
-    headers: { Authorization: `token ${token}` }
-  });
-  const data = await res.json();
-  let content = JSON.parse(base64ToUtf8(data.content));
+  const content = await getFile();
   content.push({name, total});
   await updateFile(content);
   document.getElementById("newName").value = "";
   document.getElementById("newTotal").value = "";
 }
 
-// رفع التعديلات على GitHub
+// جلب الملف من جديد
+async function getFile() {
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
+    headers: { Authorization: `token ${token}` }
+  });
+  const data = await res.json();
+  sha = data.sha;
+  return JSON.parse(decodeURIComponent(escape(atob(data.content))));
+}
+
+// رفع التعديلات إلى GitHub
 async function updateFile(newContent) {
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}`, {
     method: "PUT",
@@ -124,7 +115,7 @@ async function updateFile(newContent) {
     },
     body: JSON.stringify({
       message: "تحديث الملف عبر الواجهة",
-      content: utf8ToBase64(JSON.stringify(newContent, null, 2)),
+      content: btoa(unescape(encodeURIComponent(JSON.stringify(newContent, null, 2)))),
       sha: sha,
       branch: branch
     })
@@ -132,7 +123,7 @@ async function updateFile(newContent) {
   const data = await res.json();
   sha = data.content.sha;
   renderTable(newContent);
-  alert("تم تحديث الملف بنجاح!");
+  alert("✅ تم تحديث الملف بنجاح!");
 }
 
 // البداية
@@ -140,4 +131,4 @@ fetchData();
 </script>
 
 </body>
-  </html>
+</html>
