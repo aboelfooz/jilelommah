@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>تحكم في الملف على GitHub</title>
+<style>
+  body { font-family: Arial; text-align: center; margin: 20px; }
+  table { margin: auto; border-collapse: collapse; width: 50%; }
+  th, td { border: 1px solid #ccc; padding: 8px; }
+  th { background-color: #f2f2f2; }
+  input { padding: 5px; margin: 5px; }
+  button { padding: 5px 10px; margin: 5px; }
+</style>
+</head>
+<body>
+
+<h1>تحكم في الملف على GitHub</h1>
+
+<table id="dataTable">
+  <thead>
+    <tr>
+      <th>الاسم</th>
+      <th>المرتبة</th>
+      <th>أوامر</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<h2>إضافة عنصر جديد</h2>
+<input id="newName" placeholder="الاسم">
+<input id="newTotal" placeholder="المرتبة">
+<button onclick="addItem()">إضافة</button>
+
+<script>
+const owner = "aboelfooz";  
+const repo = "islamic-site";       
+const pathFile = "data.json"; 
+const branch = "main";     
+const token = "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"; 
+
+let sha = "";
+
+// دوال دعم UTF-8 للـ Base64
+function utf8ToBase64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function base64ToUtf8(str) {
+  return decodeURIComponent(escape(atob(str)));
+}
+
+// جلب الملف من GitHub
+async function fetchData() {
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
+    headers: { Authorization: `token ${token}` }
+  });
+  const data = await res.json();
+  sha = data.sha;
+  const content = JSON.parse(base64ToUtf8(data.content));
+  renderTable(content);
+}
+
+// عرض البيانات في الجدول
+function renderTable(items) {
+  const tbody = document.querySelector("#dataTable tbody");
+  tbody.innerHTML = "";
+  items.forEach((item, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input value="${item.name}" onchange="updateItem(${index}, 'name', this.value)"></td>
+      <td><input value="${item.total}" onchange="updateItem(${index}, 'total', this.value)"></td>
+      <td><button onclick="deleteItem(${index})">حذف</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// تعديل عنصر
+async function updateItem(index, key, value) {
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
+    headers: { Authorization: `token ${token}` }
+  });
+  const data = await res.json();
+  let content = JSON.parse(base64ToUtf8(data.content));
+  content[index][key] = value;
+  await updateFile(content);
+}
+
+// حذف عنصر
+async function deleteItem(index) {
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
+    headers: { Authorization: `token ${token}` }
+  });
+  const data = await res.json();
+  let content = JSON.parse(base64ToUtf8(data.content));
+  content.splice(index, 1);
+  await updateFile(content);
+}
+
+// إضافة عنصر جديد
+async function addItem() {
+  const name = document.getElementById("newName").value;
+  const total = document.getElementById("newTotal").value;
+  if(!name || !total) return alert("املأ جميع الحقول");
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}?ref=${branch}`, {
+    headers: { Authorization: `token ${token}` }
+  });
+  const data = await res.json();
+  let content = JSON.parse(base64ToUtf8(data.content));
+  content.push({name, total});
+  await updateFile(content);
+  document.getElementById("newName").value = "";
+  document.getElementById("newTotal").value = "";
+}
+
+// رفع التعديلات على GitHub
+async function updateFile(newContent) {
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${pathFile}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `token ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: "تحديث الملف عبر الواجهة",
+      content: utf8ToBase64(JSON.stringify(newContent, null, 2)),
+      sha: sha,
+      branch: branch
+    })
+  });
+  const data = await res.json();
+  sha = data.content.sha;
+  renderTable(newContent);
+  alert("تم تحديث الملف بنجاح!");
+}
+
+// البداية
+fetchData();
+</script>
+
+</body>
+  </html>
